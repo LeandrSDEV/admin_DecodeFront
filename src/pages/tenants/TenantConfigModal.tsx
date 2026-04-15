@@ -51,12 +51,18 @@ const MODE_OPTIONS: { value: OperationMode; label: string; description: string }
   { value: "BOTH", label: "Mesa + Delivery", description: "Ambos os modos habilitados" },
 ];
 
+export type SavedPlanInfo = {
+  type: EstablishmentType;
+  operationMode: OperationMode;
+  headline?: string;
+};
+
 type Props = {
   open: boolean;
   tenantId: number | null;
   tenantName: string;
   onClose: () => void;
-  onSaved?: () => void;
+  onSaved?: (tenantId: number, info: SavedPlanInfo) => void;
 };
 
 export default function TenantConfigModal({ open, tenantId, tenantName, onClose, onSaved }: Props) {
@@ -109,7 +115,13 @@ export default function TenantConfigModal({ open, tenantId, tenantName, onClose,
         operationMode: form.mode,
       });
       setConfig(res.data);
-      if (onSaved) onSaved();
+      if (onSaved) {
+        onSaved(tenantId, {
+          type: res.data.type,
+          operationMode: (res.data.operationMode as OperationMode) || form.mode,
+          headline: res.data.headline,
+        });
+      }
       onClose();
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

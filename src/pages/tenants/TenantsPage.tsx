@@ -26,6 +26,31 @@ type Tenant = {
   createdAt: string;
 };
 
+type TenantPlanInfo = {
+  type: string;
+  operationMode: string;
+  headline?: string;
+};
+
+const TYPE_LABELS: Record<string, string> = {
+  RESTAURANT: "Restaurante",
+  PIZZERIA: "Pizzaria",
+  LANCHONETE: "Lanchonete",
+  ACAITERIA: "Açaíteria",
+  TAPIOCARIA: "Tapiocaria",
+  CONFEITARIA: "Confeitaria",
+  SORVETERIA: "Sorveteria",
+  CAFETERIA: "Cafeteria",
+  GENERIC: "Genérico",
+};
+
+const MODE_LABELS: Record<string, string> = {
+  MESA: "Gestão de mesas",
+  DELIVERY: "Delivery",
+  BOTH: "Mesa + Delivery",
+};
+
+
 type FormState = {
   slug: string;
   subdominio: string;
@@ -57,6 +82,7 @@ function fmtDateTime(v: string | null | undefined) {
 
 export default function TenantsPage() {
   const [items, setItems] = useState<Tenant[]>([]);
+  const [planByTenant, setPlanByTenant] = useState<Record<number, TenantPlanInfo>>({});
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +107,9 @@ export default function TenantsPage() {
     setError(null);
     try {
       const res = await api.get<Tenant[]>("/api/admin/tenants");
-      setItems(Array.isArray(res.data) ? res.data : []);
+      const list = Array.isArray(res.data) ? res.data : [];
+      setItems(list);
+      void loadPlans(list);
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const msg = (e as any)?.response?.data?.message || "Falha ao carregar tenants.";
@@ -90,6 +118,31 @@ export default function TenantsPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function loadPlans(list: Tenant[]) {
+    const active = list.filter((t) => t.status === "ACTIVE");
+    const results = await Promise.allSettled(
+      active.map((t) => api.get<TenantPlanInfo>(`/api/admin/tenants/${t.id}/config`)),
+    );
+    setPlanByTenant((prev) => {
+      const next = { ...prev };
+      results.forEach((r, idx) => {
+        if (r.status === "fulfilled") {
+          const cfg = r.value.data;
+          next[active[idx].id] = {
+            type: cfg.type,
+            operationMode: cfg.operationMode,
+            headline: cfg.headline,
+          };
+        }
+      });
+      return next;
+    });
+  }
+
+  function applyPlanUpdate(tenantId: number, info: TenantPlanInfo) {
+    setPlanByTenant((prev) => ({ ...prev, [tenantId]: info }));
   }
 
   useEffect(() => {
@@ -255,9 +308,9 @@ export default function TenantsPage() {
                   <th>Slug</th>
                   <th>Subdomínio</th>
                   <th>Schema</th>
-                  <th>Nichos</th>
+                  <th>Nicho</th>
+                  <th>Plano</th>
                   <th>Gestão</th>
-                  <th>Status</th>
                   <th>Último heartbeat</th>
                   <th style={{ width: 130, textAlign: "right" }}>Ações</th>
                 </tr>
@@ -288,24 +341,27 @@ export default function TenantsPage() {
                     </td>
                     <td><code style={{ fontSize: 12 }}>{t.schemaName}</code></td>
                     <td>
-                      <code style={{ fontSize: 11 }}>{t.nichosAtivos || "[]"}</code>
+                      {planByTenant[t.id]
+                        ? TYPE_LABELS[planByTenant[t.id].type] || planByTenant[t.id].type
+                        : t.status === "ACTIVE"
+                        ? <span className="muted" style={{ fontSize: 12 }}>carregando…</span>
+                        : "—"}
+                    </td>
+                    <td>
+                      <span
+                        className="badge blue"
+                        style={{ fontWeight: 600 }}
+                        title={planByTenant[t.id]?.headline || ""}
+                      >
+                        {planByTenant[t.id]
+                          ? MODE_LABELS[planByTenant[t.id].operationMode] ||
+                            planByTenant[t.id].operationMode
+                          : "—"}
+                      </span>
                     </td>
                     <td>
                       <span className={`badge ${t.gestaoAtiva ? "ok" : "bad"}`}>
                         {t.gestaoAtiva ? "Ativa" : "Inativa"}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          t.status === "ACTIVE"
-                            ? "ok"
-                            : t.status === "SUSPENDED"
-                            ? "bad"
-                            : "blue"
-                        }`}
-                      >
-                        {t.status}
                       </span>
                     </td>
                     <td style={{ fontSize: 12 }}>{fmtDateTime(t.lastSeenAt)}</td>
@@ -533,7 +589,9 @@ export default function TenantsPage() {
         tenantId={configTenant?.id ?? null}
         tenantName={configTenant?.nomeEstabelecimento || configTenant?.slug || ""}
         onClose={() => setConfigTenant(null)}
-        onSaved={load}
+        onSaved={(tenantId, info) => {
+          if (tenantId && info) applyPlanUpdate(tenantId, info);
+        }}
       />
     </div>
   );

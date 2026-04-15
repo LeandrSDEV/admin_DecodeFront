@@ -39,6 +39,11 @@ type DashboardOverview = {
   topAffiliates: TopAffiliate[];
 };
 
+type TenantListItem = {
+  id: number;
+  createdAt: string;
+};
+
 // =============================================================================
 // Helpers
 // =============================================================================
@@ -59,6 +64,7 @@ const shortDate = (iso: string) => {
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardOverview | null>(null);
+  const [tenantsList, setTenantsList] = useState<TenantListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTenantId, setSelectedTenantId] = useState<number | "all">("all");
@@ -71,8 +77,12 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get<DashboardOverview>("/api/admin/dashboard/overview");
-      setData(res.data);
+      const [overviewRes, tenantsRes] = await Promise.all([
+        api.get<DashboardOverview>("/api/admin/dashboard/overview"),
+        api.get<TenantListItem[]>("/api/admin/tenants"),
+      ]);
+      setData(overviewRes.data);
+      setTenantsList(Array.isArray(tenantsRes.data) ? tenantsRes.data : []);
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const msg = (e as any)?.response?.data?.message || "Falha ao carregar dashboard";
@@ -82,22 +92,23 @@ export default function DashboardPage() {
     }
   }
 
-  // Totais de TODOS os tenants (pra cards do topo)
-  const totals = useMemo(() => {
-    if (!data?.tenancy.tenants) return null;
-    return data.tenancy.tenants.reduce(
-      (acc, t) => ({
-        salesToday: acc.salesToday + (t.sales?.today || 0),
-        salesLast7: acc.salesLast7 + (t.sales?.last7Days || 0),
-        salesMonth: acc.salesMonth + (t.sales?.thisMonth || 0),
-        ordersToday: acc.ordersToday + (t.orders?.today.total || 0),
-        usersTotal: acc.usersTotal + (t.users?.total || 0),
-      }),
-      { salesToday: 0, salesLast7: 0, salesMonth: 0, ordersToday: 0, usersTotal: 0 },
-    );
-  }, [data]);
+  const newTenants = useMemo(() => {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    let today = 0;
+    let month = 0;
+    for (const t of tenantsList) {
+      if (!t.createdAt) continue;
+      const ts = new Date(t.createdAt).getTime();
+      if (Number.isNaN(ts)) continue;
+      if (ts >= startOfDay) today += 1;
+      if (ts >= startOfMonth) month += 1;
+    }
+    return { today, month };
+  }, [tenantsList]);
 
-  const focusedTenant = useMemo(() => {
+const focusedTenant = useMemo(() => {
     if (!data || selectedTenantId === "all") return null;
     return data.tenancy.tenants.find((t) => t.id === selectedTenantId) || null;
   }, [data, selectedTenantId]);
@@ -144,15 +155,19 @@ export default function DashboardPage() {
         />
         <KpiCard
           color="green"
-          label="Vendas hoje"
-          value={fmtCurrency(totals?.salesToday || 0)}
-          hint={`${fmtNumber(totals?.ordersToday || 0)} pedidos finalizados`}
+          label="Novos estabelecimentos hoje"
+          value={fmtNumber(newTenants.today)}
+          hint={
+            newTenants.today === 0
+              ? "Nenhum cadastro hoje"
+              : `${newTenants.today} cadastrado${newTenants.today !== 1 ? "s" : ""} via afiliados`
+          }
         />
         <KpiCard
           color="amber"
-          label="Vendas no mês"
-          value={fmtCurrency(totals?.salesMonth || 0)}
-          hint={`Soma de ${data.tenancy.tenantCount} tenants`}
+          label="Novos estabelecimentos no mês"
+          value={fmtNumber(newTenants.month)}
+          hint={`${data.crm.affiliatesActive} afiliado${data.crm.affiliatesActive !== 1 ? "s" : ""} ativo${data.crm.affiliatesActive !== 1 ? "s" : ""}`}
         />
       </div>
 

@@ -193,6 +193,20 @@ a {
   display: grid;
   grid-template-columns: 260px 1fr;
   min-height: 100vh;
+  transition: grid-template-columns 0.2s ease;
+}
+
+.shell.shell-collapsed {
+  grid-template-columns: 0 1fr;
+}
+
+.sidebar.sidebar-collapsed {
+  width: 0;
+  padding: 0;
+  border-right: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
 }
 
 .sidebar {

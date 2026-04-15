@@ -9,6 +9,8 @@ import {
   IconDashboard,
   IconLogOut,
   IconMenu,
+  IconChevronLeft,
+  IconChevronRight,
   IconSettings,
   IconUser,
   IconUsers,
@@ -57,6 +59,21 @@ export default function AppShell() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("decode.sidebarCollapsed") === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("decode.sidebarCollapsed", sidebarCollapsed ? "1" : "0");
+    } catch {
+      // ignore
+    }
+  }, [sidebarCollapsed]);
 
   const [me, setMe] = useState<MeResponse | null>(null);
 
@@ -130,13 +147,21 @@ export default function AppShell() {
   }
 
   return (
-    <div className={`shell ${isMobile ? "shell-mobile" : ""}`}>
+    <div
+      className={`shell ${isMobile ? "shell-mobile" : ""} ${
+        !isMobile && sidebarCollapsed ? "shell-collapsed" : ""
+      }`}
+    >
       {/* overlay */}
       {isMobile && sidebarOpen && (
         <button className="overlay" onClick={() => setSidebarOpen(false)} aria-label="Fechar menu" />
       )}
 
-      <aside className={`sidebar ${isMobile ? "sidebar-mobile" : ""} ${sidebarOpen ? "open" : ""}`}>
+      <aside
+        className={`sidebar ${isMobile ? "sidebar-mobile" : ""} ${sidebarOpen ? "open" : ""} ${
+          !isMobile && sidebarCollapsed ? "sidebar-collapsed" : ""
+        }`}
+      >
         <div className="brand">
           <div className="brand-badge">D</div>
           <div className="brand-text">
@@ -284,7 +309,7 @@ export default function AppShell() {
       <div className="main">
         <header className="topnav">
           <div className="topnav-left">
-            {isMobile && (
+            {isMobile ? (
               <button
                 className="icon-btn"
                 type="button"
@@ -292,6 +317,16 @@ export default function AppShell() {
                 onClick={() => setSidebarOpen((v) => !v)}
               >
                 <IconMenu />
+              </button>
+            ) : (
+              <button
+                className="icon-btn"
+                type="button"
+                title={sidebarCollapsed ? "Expandir menu" : "Esconder menu"}
+                aria-label={sidebarCollapsed ? "Expandir menu" : "Esconder menu"}
+                onClick={() => setSidebarCollapsed((v) => !v)}
+              >
+                {sidebarCollapsed ? <IconChevronRight /> : <IconChevronLeft />}
               </button>
             )}
 
