@@ -1627,3 +1627,695 @@ textarea.input{
 .check-row .check-desc{
   font-size:12px; color:var(--muted); margin-left:28px; margin-top:-4px;
 }
+
+/* ============================================================ *
+ * Dashboard refeito — Top 3 podium, tenant filter, charts
+ * ============================================================ */
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.page-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+/* --- Top 3 Pedestal --- */
+.podium {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  align-items: end;
+  padding: 20px 10px 0;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.podium-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.podium-medal {
+  font-size: 32px;
+  margin-bottom: 4px;
+}
+.podium-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.podium-stats {
+  margin-top: 4px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.podium-clients {
+  color: var(--muted);
+}
+.podium-earned {
+  font-weight: 700;
+  color: var(--green);
+}
+.podium-bar {
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 28px;
+  color: #fff;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) inset;
+}
+.podium-rank {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+.podium-gold {
+  background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+}
+.podium-silver {
+  background: linear-gradient(180deg, #e5e7eb 0%, #94a3b8 100%);
+}
+.podium-bronze {
+  background: linear-gradient(180deg, #d97706 0%, #92400e 100%);
+}
+.podium-empty-bar {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px dashed rgba(0, 0, 0, 0.15);
+}
+
+/* --- Tenant Filter Tabs --- */
+.tenant-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tenant-tab {
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.tenant-tab:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.tenant-tab.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+/* --- Period List --- */
+.period-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.period-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  border-left: 3px solid var(--blue);
+}
+.period-label {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+}
+.period-split {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.period-value {
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--green);
+}
+.period-orders {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* --- Role List (usuários por perfil) --- */
+.role-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.role-list li {
+  padding: 8px 0;
+}
+.role-row-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+.role-name {
+  font-weight: 600;
+  color: var(--text);
+  font-family: monospace;
+  font-size: 12px;
+}
+.role-count {
+  font-weight: 800;
+  color: var(--blue);
+}
+.role-bar {
+  height: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.role-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+/* --- Donut Legend --- */
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 160px;
+}
+.donut-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.donut-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.donut-label {
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.donut-value {
+  font-weight: 700;
+  color: var(--text);
+}
+.donut-value small {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* --- Row Hover (tenants table) --- */
+.row-hover:hover {
+  background: rgba(37, 99, 235, 0.04);
+}
+
+/* ============================================================ *
+ * Plans Catalog — Fase 2 (Planos)
+ * ============================================================ */
+.plans-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 12px;
+}
+@media (max-width: 900px) {
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.plan-card {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+.plan-popular {
+  border-color: #f59e0b;
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.04) 0%, #fff 60%);
+}
+.plan-complete {
+  border-color: var(--green);
+  background: linear-gradient(180deg, rgba(5, 150, 105, 0.04) 0%, #fff 60%);
+}
+.plan-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+  color: #fff;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+.plan-complete .plan-badge {
+  background: linear-gradient(90deg, var(--green), var(--blue));
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+.plan-emoji {
+  font-size: 36px;
+  text-align: center;
+}
+.plan-name {
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+  color: var(--text);
+}
+.plan-price {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--blue);
+  text-align: center;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.plan-popular .plan-price {
+  color: #f59e0b;
+}
+.plan-complete .plan-price {
+  color: var(--green);
+}
+.plan-price small {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.plan-active-stats {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+.plan-active-count {
+  font-weight: 800;
+  color: var(--text);
+}
+.plan-active-mrr {
+  font-weight: 800;
+  color: var(--green);
+}
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.plan-features li {
+  font-size: 13px;
+  padding: 2px 0;
+}
+.plan-features .f-on {
+  color: var(--text);
+}
+.plan-features .f-off {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+/* --- Discount tiers --- */
+.discount-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 12px;
+}
+@media (max-width: 700px) {
+  .discount-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.discount-card {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+.discount-best {
+  border-color: var(--green);
+  background: linear-gradient(180deg, rgba(5, 150, 105, 0.06) 0%, #fff 70%);
+}
+.discount-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.discount-months {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.discount-pct {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--amber);
+  line-height: 1;
+}
+.discount-best .discount-pct {
+  color: var(--green);
+}
+.discount-final {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 8px;
+}
+.discount-final small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.discount-label {
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+/* ============================================================ *
+ * Sales Pitch Page (Material de venda do afiliado) — Fase 3
+ * ============================================================ */
+.sales-pitch-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.sales-hero {
+  background: linear-gradient(135deg, #0b1728 0%, #1e3a5f 100%);
+  color: #fff;
+  padding: 36px 32px;
+  border-radius: 16px;
+  text-align: center;
+}
+.sales-hero h1 {
+  margin: 12px 0;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.sales-hero p {
+  margin: 0 auto;
+  max-width: 720px;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+}
+.sales-eyebrow {
+  display: inline-block;
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* --- Calculadora --- */
+.sales-calculator {
+  margin-top: 0;
+}
+.calc-body {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+  margin-top: 12px;
+}
+@media (max-width: 800px) {
+  .calc-body {
+    grid-template-columns: 1fr;
+  }
+}
+.calc-left,
+.calc-right {
+  padding: 12px;
+}
+.calc-right {
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.06) 0%, rgba(5, 150, 105, 0.06) 100%);
+  border-radius: 10px;
+  border-left: 4px solid var(--amber);
+}
+.calc-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.calc-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.calc-slider {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+.calc-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--amber);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+.calc-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--amber);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+.calc-slider-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--amber);
+}
+.calc-plan-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.calc-plan-btn {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.calc-plan-btn:hover {
+  border-color: var(--blue);
+}
+.calc-plan-btn.active {
+  border-color: var(--amber);
+  background: rgba(245, 158, 11, 0.08);
+}
+.calc-plan-emoji {
+  font-size: 22px;
+}
+.calc-plan-price {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  margin-top: 4px;
+}
+.calc-plan-name {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.calc-result-label {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.calc-result-value {
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-top: 4px;
+}
+.calc-monthly {
+  color: var(--amber);
+}
+.calc-yearly {
+  color: var(--green);
+  font-size: 24px;
+}
+.calc-formula {
+  font-size: 11px;
+  margin-top: 12px;
+  font-style: italic;
+}
+
+/* --- Diferenciais --- */
+.diferencial-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 12px;
+}
+@media (max-width: 900px) {
+  .diferencial-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .diferencial-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.diferencial-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.diferencial-icon {
+  font-size: 28px;
+}
+.diferencial-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+}
+.diferencial-text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* --- Fluxo da comissão --- */
+.fluxo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 12px;
+}
+@media (max-width: 800px) {
+  .fluxo-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 500px) {
+  .fluxo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.fluxo-step {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 10px;
+  padding: 16px 12px;
+  text-align: center;
+  position: relative;
+}
+.fluxo-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: #fff;
+  font-weight: 900;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+.fluxo-step-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+.fluxo-step-text {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+/* --- CTA final --- */
+.sales-cta {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.06), rgba(124, 58, 237, 0.06));
+  border-left: 4px solid var(--blue);
+  text-align: center;
+  padding: 24px;
+}
+

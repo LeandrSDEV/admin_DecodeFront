@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../lib/api";
 import Modal from "../../components/Modal";
+import PlansCatalog from "./PlansCatalog";
 
 type DecodeOption = {
   id: string;
@@ -325,10 +326,12 @@ export default function PlanosPage() {
 
   return (
     <div className="page">
-      <div className="page-header">
+      <PlansCatalog />
+
+      <div className="page-header" style={{ marginTop: 24 }}>
         <div>
-          <h1>Planos</h1>
-          <div className="muted">Contratos e assinaturas dos clientes — {totalElements} registros</div>
+          <h1>Assinaturas</h1>
+          <div className="muted">Contratos ativos dos clientes — {totalElements} registros</div>
         </div>
         <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
           <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
