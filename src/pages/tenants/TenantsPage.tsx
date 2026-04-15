@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../lib/api";
 import Modal from "../../components/Modal";
+import TenantConfigModal from "./TenantConfigModal";
 import {
   IconBuilding,
   IconPencil,
   IconPlus,
   IconRefresh,
   IconSearch,
+  IconSettings,
   IconTrash,
 } from "../../components/ui/Icons";
 
@@ -65,6 +67,8 @@ export default function TenantsPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const [configTenant, setConfigTenant] = useState<Tenant | null>(null);
 
   function showSuccess(msg: string) {
     setSuccess(msg);
@@ -309,8 +313,17 @@ export default function TenantsPage() {
                       <div className="row" style={{ gap: 6, justifyContent: "flex-end" }}>
                         <button
                           className="btn-ghost"
+                          onClick={() => setConfigTenant(t)}
+                          title="Configurar nicho e modo"
+                          style={{ padding: "6px 8px" }}
+                          disabled={t.status !== "ACTIVE"}
+                        >
+                          <IconSettings size={15} />
+                        </button>
+                        <button
+                          className="btn-ghost"
                           onClick={() => openEdit(t)}
-                          title="Editar"
+                          title="Editar metadata"
                           style={{ padding: "6px 8px" }}
                         >
                           <IconPencil size={15} />
@@ -514,6 +527,14 @@ export default function TenantsPage() {
           )}
         </div>
       </Modal>
+
+      <TenantConfigModal
+        open={!!configTenant}
+        tenantId={configTenant?.id ?? null}
+        tenantName={configTenant?.nomeEstabelecimento || configTenant?.slug || ""}
+        onClose={() => setConfigTenant(null)}
+        onSaved={load}
+      />
     </div>
   );
 }
