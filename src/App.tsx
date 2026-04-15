@@ -12,6 +12,7 @@ import PlanosPage from "./pages/controle/PlanosPage";
 import AfiliadosPage from "./pages/afiliados/AfiliadosPage";
 import AfiliadoDetalhePage from "./pages/afiliados/AfiliadoDetalhePage";
 import ComissoesPage from "./pages/afiliados/ComissoesPage";
+import ConhecimentoPage from "./pages/parceiros/ConhecimentoPage";
 import AfiliadoLoginPage from "./pages/afiliado/AfiliadoLoginPage";
 import AfiliadoPainelPage from "./pages/afiliado/AfiliadoPainelPage";
 import AfiliadoComissoesPage from "./pages/afiliado/AfiliadoComissoesPage";
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/parceiros/afiliados" element={<AfiliadosPage />} />
           <Route path="/parceiros/afiliados/:id" element={<AfiliadoDetalhePage />} />
           <Route path="/parceiros/comissoes" element={<ComissoesPage />} />
+          <Route path="/parceiros/conhecimento" element={<ConhecimentoPage />} />
 
           {/* Compatibilidade: redireciona URLs antigas */}
           <Route path="/controle/decodes" element={<Navigate to="/clientes/decodes" replace />} />
