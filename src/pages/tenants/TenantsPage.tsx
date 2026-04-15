@@ -76,7 +76,7 @@ export default function TenantsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get<Tenant[]>("/api/tenancy");
+      const res = await api.get<Tenant[]>("/api/admin/tenants");
       setItems(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -128,7 +128,7 @@ export default function TenantsPage() {
     );
     if (!ok) return;
     try {
-      await api.delete(`/api/tenancy/${t.id}`);
+      await api.delete(`/api/admin/tenants/${t.id}`);
       showSuccess("Tenant suspenso.");
       await load();
     } catch (e) {
@@ -159,7 +159,7 @@ export default function TenantsPage() {
     setSaving(true);
     try {
       if (editing) {
-        await api.put(`/api/tenancy/${editing.id}`, {
+        await api.put(`/api/admin/tenants/${editing.id}`, {
           nomeEstabelecimento: form.nomeEstabelecimento.trim(),
           nichosAtivos: form.nichosAtivos.trim() || "[]",
           gestaoAtiva: form.gestaoAtiva === "true",
@@ -168,7 +168,7 @@ export default function TenantsPage() {
         });
         showSuccess("Tenant atualizado.");
       } else {
-        await api.post("/api/tenancy", {
+        await api.post("/api/admin/tenants", {
           slug: form.slug.trim().toLowerCase(),
           subdominio: form.subdominio.trim().toLowerCase(),
           nomeEstabelecimento: form.nomeEstabelecimento.trim(),
