@@ -42,6 +42,7 @@ function titleForPath(pathname: string) {
   if (pathname.startsWith("/parceiros/comissoes")) return "Parceiros • Comissões";
   if (pathname.startsWith("/usuarios")) return "Usuários";
   if (pathname.startsWith("/monitoramento")) return "Monitoramento";
+  if (pathname.startsWith("/tenants")) return "Tenants";
   return "Painel";
 }
 
@@ -237,6 +238,14 @@ export default function AppShell() {
           >
             <IconActivity />
             <span>Monitoramento</span>
+          </NavLink>
+
+          <NavLink
+            to="/tenants"
+            className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+          >
+            <IconBuilding />
+            <span>Tenants</span>
           </NavLink>
 
           <button

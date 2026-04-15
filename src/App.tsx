@@ -20,6 +20,7 @@ import AfiliadoLeadsPage from "./pages/afiliado/AfiliadoLeadsPage";
 import AfiliadoInteracoesPage from "./pages/afiliado/AfiliadoInteracoesPage";
 import UsuariosPage from "./pages/usuarios/UsuariosPage";
 import MonitoramentoPage from "./pages/monitoramento/MonitoramentoPage";
+import TenantsPage from "./pages/tenants/TenantsPage";
 import ProfilePage from "./pages/settings/ProfilePage";
 import SecurityPage from "./pages/settings/SecurityPage";
 
@@ -63,6 +64,7 @@ export default function App() {
           <Route path="/controle/comissoes" element={<Navigate to="/parceiros/comissoes" replace />} />
           <Route path="/usuarios" element={<UsuariosPage />} />
           <Route path="/monitoramento" element={<MonitoramentoPage />} />
+          <Route path="/tenants" element={<TenantsPage />} />
 
           <Route path="/config/perfil" element={<ProfilePage />} />
           <Route path="/config/seguranca" element={<SecurityPage />} />

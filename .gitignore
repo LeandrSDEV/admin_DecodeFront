@@ -22,3 +22,21 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Env files com segredos (NUNCA commitar)
+.env
+.env.development
+.env.production
+.env.*.local
+
+# OS
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Build cache
+.vite/
+.turbo/
+.cache/
+*.tsbuildinfo
+!tsconfig.tsbuildinfo
