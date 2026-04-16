@@ -24,6 +24,8 @@ import {
   IconTrash,
 } from "../../components/ui/Icons";
 
+type SubscriptionModule = "MESA" | "DELIVERY" | "COMPLETA";
+
 type Plan = {
   id: string;
   decodeId: string | null;
@@ -31,6 +33,7 @@ type Plan = {
   decodeCode: string | null;
   establishmentName: string | null;
   clientName: string | null;
+  module: SubscriptionModule;
   planName: string;
   price: number;
   discountPct: number;
@@ -46,11 +49,17 @@ type Plan = {
   createdAt: string;
 };
 
-const PLAN_OPTIONS = [
-  "Gestão de Mesas",
-  "Gestão Delivery",
-  "Gestão Completa",
+const PLAN_OPTIONS: { label: string; module: SubscriptionModule }[] = [
+  { label: "Gestão de Mesas", module: "MESA" },
+  { label: "Gestão Delivery", module: "DELIVERY" },
+  { label: "Gestão Completa", module: "COMPLETA" },
 ];
+
+const MODULE_LABELS: Record<SubscriptionModule, { label: string; cls: string }> = {
+  MESA: { label: "Mesa", cls: "badge" },
+  DELIVERY: { label: "Delivery", cls: "badge accent-blue" },
+  COMPLETA: { label: "Completa", cls: "badge accent-purple" },
+};
 
 const statusBadge: Record<string, { cls: string; label: string }> = {
   ACTIVE: { cls: "badge ok", label: "Ativo" },
@@ -93,6 +102,11 @@ function addDaysISO(startedAt: string, durationDays: number) {
   return toLocalInput(d);
 }
 
+function moduleFromPlanName(planName: string): SubscriptionModule {
+  const found = PLAN_OPTIONS.find((p) => p.label === planName);
+  return found?.module ?? "COMPLETA";
+}
+
 export default function PlanosPage() {
   const [items, setItems] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,7 +124,8 @@ export default function PlanosPage() {
     decodeId: "",
     establishmentName: "",
     clientName: "",
-    planName: PLAN_OPTIONS[0],
+    module: "MESA" as SubscriptionModule,
+    planName: PLAN_OPTIONS[0].label,
     price: "",
     discountPct: "0",
     durationDays: "30",
@@ -185,7 +200,8 @@ export default function PlanosPage() {
       decodeId: "",
       establishmentName: "",
       clientName: "",
-      planName: PLAN_OPTIONS[0],
+      module: "MESA",
+      planName: PLAN_OPTIONS[0].label,
       price: "",
       discountPct: "0",
       durationDays: "30",
@@ -208,6 +224,10 @@ export default function PlanosPage() {
           next.expiresAt = addDaysISO(next.startedAt, dur);
         }
       }
+      // Auto-deriva módulo do plano selecionado
+      if ("planName" in patch) {
+        next.module = moduleFromPlanName(next.planName);
+      }
       return next;
     });
   }
@@ -223,6 +243,7 @@ export default function PlanosPage() {
         decodeId: form.decodeId,
         establishmentName: form.establishmentName.trim(),
         clientName: form.clientName.trim(),
+        module: form.module,
         planName: form.planName,
         price: Number(form.price),
         discountPct: Number(form.discountPct || 0),
@@ -244,7 +265,7 @@ export default function PlanosPage() {
       setRenewingId(null);
       await load();
     } catch (e: any) {
-      setError(e?.response?.data?.message || "Falha ao salvar plano.");
+      setError(e?.response?.data?.message || e?.response?.data?.error || "Falha ao salvar plano.");
     } finally {
       setSaving(false);
     }
@@ -296,7 +317,8 @@ export default function PlanosPage() {
       decodeId: p.decodeId ?? "",
       establishmentName: p.establishmentName || p.decodeName || "",
       clientName: p.clientName || "",
-      planName: PLAN_OPTIONS.includes(p.planName) ? p.planName : PLAN_OPTIONS[0],
+      module: p.module ?? moduleFromPlanName(p.planName),
+      planName: PLAN_OPTIONS.some((o) => o.label === p.planName) ? p.planName : PLAN_OPTIONS[0].label,
       price: String(p.price),
       discountPct: String(p.discountPct ?? 0),
       durationDays: String(p.durationDays),
@@ -388,13 +410,14 @@ export default function PlanosPage() {
                   <tr>
                     <th>Estabelecimento</th>
                     <th>Cliente</th>
+                    <th>Modulo</th>
                     <th>Plano</th>
                     <th>Valor</th>
                     <th>Desc.</th>
-                    <th>Início</th>
+                    <th>Inicio</th>
                     <th>Final</th>
                     <th>Status</th>
-                    <th style={{ width: 160, textAlign: "right" }}>Ações</th>
+                    <th style={{ width: 160, textAlign: "right" }}>Acoes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -402,6 +425,7 @@ export default function PlanosPage() {
                     const days = daysRemaining(s.expiresAt);
                     const expiring = s.status === "ACTIVE" && days <= 7 && days > 0;
                     const finalPrice = calcFinalPrice(s.price || 0, s.discountPct || 0);
+                    const mod = MODULE_LABELS[s.module] ?? MODULE_LABELS.COMPLETA;
                     return (
                       <tr key={s.id}>
                         <td>
@@ -411,6 +435,9 @@ export default function PlanosPage() {
                           )}
                         </td>
                         <td>{s.clientName || "-"}</td>
+                        <td>
+                          <span className={mod.cls} style={{ fontSize: 11 }}>{mod.label}</span>
+                        </td>
                         <td style={{ fontWeight: 600 }}>{s.planName}</td>
                         <td style={{ fontWeight: 700 }}>
                           {fmtCurrency(finalPrice)}
@@ -485,11 +512,11 @@ export default function PlanosPage() {
         )}
       </div>
 
-      {/* Create modal */}
+      {/* Create / Renew modal */}
       <Modal
         open={createOpen}
         title={renewingId ? "Renovar plano" : "Novo plano"}
-        subtitle={renewingId ? "O plano anterior será expirado automaticamente" : "Cadastre um plano para um cliente"}
+        subtitle={renewingId ? "O plano anterior sera expirado automaticamente" : "Cadastre um plano para um cliente"}
         onClose={() => { if (!saving) setCreateOpen(false); }}
         footer={
           <div className="row" style={{ gap: 8, justifyContent: "flex-end" }}>
@@ -526,13 +553,13 @@ export default function PlanosPage() {
               ))}
             </select>
             <span className="form-hint">
-              A comissão/montante do plano é atribuída ao afiliado vinculado ao decode.
+              A comissao/montante do plano e atribuida ao afiliado vinculado ao decode.
             </span>
           </div>
 
           <div className="form-field">
             <span className="form-label">Nome do cliente <span style={{ color: "var(--red)" }}>*</span></span>
-            <input className="input" value={form.clientName} onChange={(e) => updateForm({ clientName: e.target.value })} placeholder="Ex: João Silva" />
+            <input className="input" value={form.clientName} onChange={(e) => updateForm({ clientName: e.target.value })} placeholder="Ex: Joao Silva" />
           </div>
 
           <div className="form-grid cols-2">
@@ -540,15 +567,28 @@ export default function PlanosPage() {
               <span className="form-label">Plano <span style={{ color: "var(--red)" }}>*</span></span>
               <select className="input" value={form.planName} onChange={(e) => updateForm({ planName: e.target.value })}>
                 {PLAN_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
+                  <option key={opt.label} value={opt.label}>{opt.label}</option>
                 ))}
               </select>
+              <span className="form-hint">
+                Modulo: <b>{MODULE_LABELS[form.module]?.label ?? form.module}</b>
+                {form.module === "MESA" && " — apenas gestao de mesas"}
+                {form.module === "DELIVERY" && " — apenas delivery"}
+                {form.module === "COMPLETA" && " — mesa + delivery"}
+              </span>
             </div>
             <div className="form-field">
               <span className="form-label">Valor (R$) <span style={{ color: "var(--red)" }}>*</span></span>
               <input className="input" type="number" min="0" step="0.01" value={form.price} onChange={(e) => updateForm({ price: e.target.value })} placeholder="0.00" />
             </div>
           </div>
+
+          {(form.module === "MESA" || form.module === "DELIVERY") && (
+            <div className="alert-info" style={{ margin: 0 }}>
+              Este plano cobre apenas o modulo <b>{MODULE_LABELS[form.module]?.label}</b>.
+              O cliente pode ter uma assinatura independente para o outro modulo, com duracao e vencimento proprios.
+            </div>
+          )}
 
           <div className="form-grid cols-2">
             <div className="form-field">
@@ -561,7 +601,7 @@ export default function PlanosPage() {
               )}
             </div>
             <div className="form-field">
-              <span className="form-label">Duração (dias) <span style={{ color: "var(--red)" }}>*</span></span>
+              <span className="form-label">Duracao (dias) <span style={{ color: "var(--red)" }}>*</span></span>
               <input className="input" type="number" min="1" value={form.durationDays} onChange={(e) => updateForm({ durationDays: e.target.value })} />
               <span className="form-hint">30 = mensal, 90 = trimestral, 365 = anual</span>
             </div>
@@ -579,11 +619,11 @@ export default function PlanosPage() {
           </div>
 
           <div className="form-field">
-            <span className="form-label">Funcionalidades incluídas</span>
-            <textarea className="input" rows={3} value={form.features} onChange={(e) => setForm((p) => ({ ...p, features: e.target.value }))} placeholder="Ex: Dashboard, CRM, Relatórios..." />
+            <span className="form-label">Funcionalidades incluidas</span>
+            <textarea className="input" rows={3} value={form.features} onChange={(e) => setForm((p) => ({ ...p, features: e.target.value }))} placeholder="Ex: Dashboard, CRM, Relatorios..." />
           </div>
           <div className="form-field">
-            <span className="form-label">Observações</span>
+            <span className="form-label">Observacoes</span>
             <textarea className="input" rows={2} value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} />
           </div>
         </div>
@@ -615,13 +655,19 @@ export default function PlanosPage() {
                 </span>
               </div>
               <div className="stat-card">
+                <span className="stat-label">Modulo</span>
+                <span className={MODULE_LABELS[detail.module]?.cls || "badge"} style={{ marginTop: 4 }}>
+                  {MODULE_LABELS[detail.module]?.label || detail.module}
+                </span>
+              </div>
+              <div className="stat-card">
                 <span className="stat-label">Valor final</span>
                 <span className="stat-value">
                   {fmtCurrency(calcFinalPrice(detail.price || 0, detail.discountPct || 0))}
                 </span>
               </div>
               <div className="stat-card">
-                <span className="stat-label">Duração</span>
+                <span className="stat-label">Duracao</span>
                 <span className="stat-value">{detail.durationDays} dias</span>
               </div>
               <div className="stat-card">
@@ -635,13 +681,14 @@ export default function PlanosPage() {
             <div className="kv" style={{ marginTop: 14 }}>
               <div><span>Estabelecimento</span><b>{detail.establishmentName || detail.decodeName || "-"}</b></div>
               <div><span>Cliente</span><b>{detail.clientName || "-"}</b></div>
+              <div><span>Modulo</span><b>{MODULE_LABELS[detail.module]?.label || detail.module}</b></div>
               <div><span>Plano</span><b>{detail.planName}</b></div>
               <div><span>Valor base</span><b>{fmtCurrency(detail.price)}</b></div>
               <div><span>Desconto</span><b>{detail.discountPct || 0}%</b></div>
-              <div><span>Início</span><b>{fmtDateTime(detail.startedAt)}</b></div>
+              <div><span>Inicio</span><b>{fmtDateTime(detail.startedAt)}</b></div>
               <div><span>Final</span><b>{fmtDateTime(detail.expiresAt)}</b></div>
               <div><span>Funcionalidades</span><b>{detail.features || "-"}</b></div>
-              <div><span>Observações</span><b>{detail.notes || "-"}</b></div>
+              <div><span>Observacoes</span><b>{detail.notes || "-"}</b></div>
               {detail.cancelledAt && <div><span>Cancelado em</span><b>{fmtDateTime(detail.cancelledAt)}</b></div>}
               {detail.cancelReason && <div><span>Motivo</span><b>{detail.cancelReason}</b></div>}
               <div><span>Criado em</span><b>{fmtDateTime(detail.createdAt)}</b></div>
@@ -654,7 +701,7 @@ export default function PlanosPage() {
       <Modal
         open={cancelOpen}
         title="Cancelar plano"
-        subtitle={cancelTarget ? `${cancelTarget.establishmentName || cancelTarget.decodeName || ""} — ${cancelTarget.planName}` : ""}
+        subtitle={cancelTarget ? `${cancelTarget.establishmentName || cancelTarget.decodeName || ""} — ${cancelTarget.planName} (${MODULE_LABELS[cancelTarget.module]?.label || cancelTarget.module})` : ""}
         onClose={() => setCancelOpen(false)}
         footer={
           <div className="row" style={{ gap: 8, justifyContent: "flex-end" }}>
@@ -664,7 +711,8 @@ export default function PlanosPage() {
         }
       >
         <div className="alert-info" style={{ margin: 0 }}>
-          Esta ação irá cancelar o plano. O cliente perderá acesso ao final do período.
+          Esta acao ira cancelar apenas o modulo <b>{MODULE_LABELS[cancelTarget?.module ?? "COMPLETA"]?.label}</b>.
+          {cancelTarget?.module !== "COMPLETA" && " Assinaturas de outros modulos nao serao afetadas."}
         </div>
         <div className="form-field" style={{ marginTop: 12 }}>
           <span className="form-label">Motivo do cancelamento (opcional)</span>

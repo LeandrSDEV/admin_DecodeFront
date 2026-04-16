@@ -97,6 +97,7 @@ const fmtCurrency = (v: number) =>
 
 type SubscriptionLite = {
   id: string;
+  module: "MESA" | "DELIVERY" | "COMPLETA";
   planName: string;
   status: string;
   price: number;
@@ -131,12 +132,20 @@ export default function PlansCatalog() {
     }
   }
 
+  const MODULE_MAP: Record<string, string> = {
+    mesas: "MESA",
+    delivery: "DELIVERY",
+    completa: "COMPLETA",
+  };
+
   const planStats: PlanStats[] = useMemo(() => {
     return PLANS.map((p) => {
+      const moduleKey = MODULE_MAP[p.key] || p.key.toUpperCase();
       const active = subs.filter(
         (s) =>
           s.status === "ACTIVE" &&
-          (s.planName || "").toLowerCase().includes(p.key.toLowerCase()),
+          (s.module === moduleKey ||
+            (s.planName || "").toLowerCase().includes(p.key.toLowerCase())),
       );
       const monthlyRevenue = active.reduce((sum, s) => sum + (s.price || 0), 0);
       return { key: p.key, name: p.name, active: active.length, monthlyRevenue };

@@ -25,6 +25,7 @@ type Decode = {
   monthlyRevenue: number;
   affiliateId: string | null;
   affiliateName: string | null;
+  tenantId: number | null;
   updatedAt: string;
 };
 
@@ -72,7 +73,7 @@ export default function ControleDecodesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Decode | null>(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ name: "", city: "", status: "ACTIVE", usersCount: "0", monthlyRevenue: "0", affiliateId: "" });
+  const [form, setForm] = useState({ name: "", city: "", status: "ACTIVE", usersCount: "0", monthlyRevenue: "0", affiliateId: "", tenantId: "" });
 
   // Affiliates dropdown (carregado on demand ao abrir o modal de criação)
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
@@ -121,7 +122,7 @@ export default function ControleDecodesPage() {
 
   function openCreate() {
     setEditing(null);
-    setForm({ name: "", city: "", status: "ACTIVE", usersCount: "0", monthlyRevenue: "0", affiliateId: "" });
+    setForm({ name: "", city: "", status: "ACTIVE", usersCount: "0", monthlyRevenue: "0", affiliateId: "", tenantId: "" });
     setModalOpen(true);
     loadAffiliatesIfNeeded();
   }
@@ -135,6 +136,7 @@ export default function ControleDecodesPage() {
       usersCount: String(d.usersCount ?? 0),
       monthlyRevenue: String(d.monthlyRevenue ?? 0),
       affiliateId: d.affiliateId ?? "",
+      tenantId: d.tenantId != null ? String(d.tenantId) : "",
     });
     setModalOpen(true);
     loadAffiliatesIfNeeded();
@@ -156,6 +158,7 @@ export default function ControleDecodesPage() {
         monthlyRevenue: Number(form.monthlyRevenue) || 0,
       };
       if (form.affiliateId) payload.affiliateId = form.affiliateId;
+      if (form.tenantId) payload.tenantId = Number(form.tenantId);
       if (editing) {
         await api.put(`/api/decodes/${editing.id}`, payload);
         showSuccess("Decode atualizado.");
@@ -408,6 +411,19 @@ export default function ControleDecodesPage() {
               {editing
                 ? "Altere se quiser trocar o afiliado responsável por esse decode."
                 : "Obrigatório — quem trouxe esse estabelecimento."}
+            </span>
+          </div>
+          <div className="form-field">
+            <span className="form-label">Tenant ID (backend operacional)</span>
+            <input
+              className="input"
+              type="number"
+              placeholder="ID do tenant no sistema operacional"
+              value={form.tenantId}
+              onChange={(e) => setForm((p) => ({ ...p, tenantId: e.target.value }))}
+            />
+            <span className="form-hint">
+              Vincule ao tenant do sistema operacional para sincronizar datas de assinatura automaticamente.
             </span>
           </div>
         </div>
