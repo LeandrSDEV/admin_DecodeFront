@@ -2333,3 +2333,51 @@ textarea.input{
   padding: 24px;
 }
 
+/* ===== Print / Salvar PDF ===== */
+@media print {
+  /* Esconder chrome do app */
+  .sidebar,
+  .sidebar-mobile,
+  .topbar,
+  .page-header .btn-ghost,
+  .page-header button {
+    display: none !important;
+  }
+
+  .main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Conhecimento: esconde sumário lateral, conteúdo ocupa 100% */
+  .knowledge-layout {
+    display: block !important;
+  }
+
+  .knowledge-layout > aside {
+    display: none !important;
+  }
+
+  .knowledge-layout > div {
+    width: 100% !important;
+  }
+
+  /* Cards/sections sem sombra e sem corte */
+  .card, section {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  /* Garantir que conteúdo não seja cortado */
+  .page {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  body, html {
+    overflow: visible !important;
+    height: auto !important;
+  }
+}
+
