@@ -2335,18 +2335,31 @@ textarea.input{
 
 /* ===== Print / Salvar PDF ===== */
 @media print {
-  /* Esconder chrome do app */
+  /* Esconder toda a chrome do app */
   .sidebar,
   .sidebar-mobile,
-  .topbar,
+  .topnav,
   .page-header .btn-ghost,
   .page-header button {
     display: none !important;
   }
 
+  /* Shell vira coluna única sem sidebar */
+  .shell,
+  .shell.shell-collapsed {
+    display: block !important;
+    grid-template-columns: none !important;
+  }
+
   .main {
     margin-left: 0 !important;
     padding: 0 !important;
+    display: block !important;
+  }
+
+  .content {
+    padding: 12px !important;
+    width: 100% !important;
   }
 
   /* Conhecimento: esconde sumário lateral, conteúdo ocupa 100% */
@@ -2378,6 +2391,11 @@ textarea.input{
   body, html {
     overflow: visible !important;
     height: auto !important;
+  }
+
+  /* Imagens de screenshot: esconder placeholder, mostrar img */
+  figure {
+    break-inside: avoid;
   }
 }
 
