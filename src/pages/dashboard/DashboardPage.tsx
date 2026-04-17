@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../lib/api";
+import {
+  listAffiliates,
+  fetchAffiliateDashboard,
+  type Affiliate,
+  type AdminAffiliateDashboard,
+} from "../../services/affiliateService";
 
 // =============================================================================
 // Types — espelhando GET /api/admin/dashboard/overview
@@ -69,20 +75,39 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedTenantId, setSelectedTenantId] = useState<number | "all">("all");
 
+  const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [selectedAffiliateId, setSelectedAffiliateId] = useState<string>("");
+  const [affiliateDashboard, setAffiliateDashboard] = useState<AdminAffiliateDashboard | null>(null);
+  const [loadingAffiliateDash, setLoadingAffiliateDash] = useState(false);
+
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    if (!selectedAffiliateId) {
+      setAffiliateDashboard(null);
+      return;
+    }
+    setLoadingAffiliateDash(true);
+    fetchAffiliateDashboard(selectedAffiliateId)
+      .then(setAffiliateDashboard)
+      .catch(() => setAffiliateDashboard(null))
+      .finally(() => setLoadingAffiliateDash(false));
+  }, [selectedAffiliateId]);
 
   async function load() {
     setLoading(true);
     setError(null);
     try {
-      const [overviewRes, tenantsRes] = await Promise.all([
+      const [overviewRes, tenantsRes, affiliatesRes] = await Promise.all([
         api.get<DashboardOverview>("/api/admin/dashboard/overview"),
         api.get<TenantListItem[]>("/api/admin/tenants"),
+        listAffiliates({ size: 200 }).catch(() => ({ content: [] as Affiliate[], totalElements: 0, number: 0, size: 0 })),
       ]);
       setData(overviewRes.data);
       setTenantsList(Array.isArray(tenantsRes.data) ? tenantsRes.data : []);
+      setAffiliates(affiliatesRes.content || []);
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const msg = (e as any)?.response?.data?.message || "Falha ao carregar dashboard";
@@ -178,6 +203,49 @@ const focusedTenant = useMemo(() => {
           <span className="muted">Ranqueado por comissão total</span>
         </div>
         <Podium affiliates={data.topAffiliates} />
+      </section>
+
+      {/* ============ FILTRO DE AFILIADO ============ */}
+      <section className="card" style={{ marginTop: 14 }}>
+        <div className="page-section-header" style={{ marginBottom: 12 }}>
+          <h3 style={{ margin: 0 }}>🎯 Visão por Afiliado</h3>
+          <span className="muted">
+            {selectedAffiliateId
+              ? "Detalhe individual do afiliado selecionado"
+              : "Selecione para inspecionar um afiliado específico"}
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <select
+            value={selectedAffiliateId}
+            onChange={(e) => setSelectedAffiliateId(e.target.value)}
+            className="input"
+            style={{ minWidth: 280 }}
+          >
+            <option value="">— Nenhum (visão consolidada) —</option>
+            {affiliates.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.name} · {a.refCode} · {a.status}
+              </option>
+            ))}
+          </select>
+          {selectedAffiliateId && (
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setSelectedAffiliateId("")}
+            >
+              Limpar
+            </button>
+          )}
+        </div>
+
+        {selectedAffiliateId && (
+          <AffiliateFocusPanel
+            loading={loadingAffiliateDash}
+            dashboard={affiliateDashboard}
+          />
+        )}
       </section>
 
       {/* ============ FILTRO DE TENANT ============ */}
@@ -628,6 +696,96 @@ function DonutChart({ parts }: { parts: { label: string; value: number; color: s
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// Painel focado em um afiliado (usado no filtro do dashboard admin)
+// =============================================================================
+
+function AffiliateFocusPanel({
+  loading,
+  dashboard,
+}: {
+  loading: boolean;
+  dashboard: AdminAffiliateDashboard | null;
+}) {
+  if (loading) {
+    return (
+      <div style={{ padding: 20, textAlign: "center", color: "#94a3b8" }}>
+        Carregando dashboard do afiliado...
+      </div>
+    );
+  }
+  if (!dashboard) {
+    return (
+      <div style={{ padding: 20, textAlign: "center", color: "#fca5a5" }}>
+        Não foi possível carregar o dashboard deste afiliado.
+      </div>
+    );
+  }
+
+  const trend = dashboard.productionTrend || [];
+  const maxDec = Math.max(1, ...trend.map((p) => p.decodes));
+  const totalDec = trend.reduce((s, p) => s + p.decodes, 0);
+  const peak = trend.reduce((best, p) => (p.decodes > best.decodes ? p : best), trend[0] || { date: "", decodes: 0, commissionAmount: 0 });
+
+  return (
+    <div style={{ marginTop: 14 }}>
+      <div className="kpi-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}>
+        <KpiCard color="green" label="Cadastros hoje" value={fmtNumber(dashboard.decodesToday)} />
+        <KpiCard color="amber" label="Cadastros no mês" value={fmtNumber(dashboard.decodesThisMonth)} />
+        <KpiCard color="blue" label="Total de decodes" value={fmtNumber(dashboard.decodesTotal)} />
+        <KpiCard color="purple" label="Ativos agora" value={fmtNumber(dashboard.activeClients)} hint={`${dashboard.totalConversions} conversões lifetime`} />
+      </div>
+
+      <div className="kpi-grid" style={{ marginTop: 12, gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}>
+        <KpiCard color="green" label="Comissão hoje" value={fmtCurrency(dashboard.dailyEarned)} />
+        <KpiCard color="amber" label="Estimativa do mês" value={fmtCurrency(dashboard.currentMonthEstimate)} />
+        <KpiCard color="blue" label="Mês anterior" value={fmtCurrency(dashboard.lastMonthEarned)} />
+        <KpiCard color="purple" label="Total acumulado" value={fmtCurrency(dashboard.lifetimeEarned)} hint="pago + aprovado + pendente" />
+      </div>
+
+      <div className="kpi-grid" style={{ marginTop: 12, gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}>
+        <KpiCard color="green" label="Já repassado" value={fmtCurrency(dashboard.alreadyPaid)} />
+        <KpiCard color="amber" label="A receber" value={fmtCurrency(dashboard.readyForPayout)} hint="aprovado, aguardando payout" />
+        <KpiCard color="red" label="Em carência" value={fmtCurrency(dashboard.pendingCarencia)} hint="aguardando 2 meses" />
+        <KpiCard color="blue" label="Taxa" value={`${dashboard.commissionRate}%`} />
+      </div>
+
+      <div className="card" style={{ marginTop: 14, padding: 18 }}>
+        <div className="page-section-header" style={{ marginBottom: 8 }}>
+          <h3 style={{ margin: 0, fontSize: 14 }}>📈 Produção — últimos 30 dias</h3>
+          <span className="muted">
+            {totalDec} cadastros · pico {peak.decodes} em {peak.date ? shortDate(peak.date) : "-"}
+          </span>
+        </div>
+        {trend.length === 0 ? (
+          <div className="muted" style={{ padding: 10 }}>Sem dados.</div>
+        ) : (
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 80, paddingTop: 6 }}>
+            {trend.map((p, i) => {
+              const h = (p.decodes / maxDec) * 72;
+              const isZero = p.decodes === 0;
+              return (
+                <div
+                  key={i}
+                  title={`${shortDate(p.date)}: ${p.decodes} cadastros · ${fmtCurrency(p.commissionAmount)}`}
+                  style={{
+                    flex: 1,
+                    minWidth: 4,
+                    height: isZero ? 2 : Math.max(4, h),
+                    background: isZero ? "rgba(239, 68, 68, 0.6)" : p.decodes === peak.decodes ? "#ff9147" : "#ff6b1a",
+                    borderRadius: 2,
+                    opacity: p.decodes === peak.decodes ? 1 : 0.85,
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

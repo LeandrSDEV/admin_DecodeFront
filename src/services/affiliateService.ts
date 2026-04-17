@@ -120,6 +120,32 @@ export async function getAffiliate(id: string): Promise<Affiliate> {
   return res.data;
 }
 
+export type AdminAffiliateDashboard = {
+  refCode: string;
+  shareLink: string;
+  commissionRate: number;
+  decodesToday: number;
+  decodesThisMonth: number;
+  decodesTotal: number;
+  activeClients: number;
+  totalConversions: number;
+  dailyEarned: number;
+  currentMonthEstimate: number;
+  lastMonthEarned: number;
+  lifetimeEarned: number;
+  pendingCarencia: number;
+  readyForPayout: number;
+  alreadyPaid: number;
+  nextPayoutDate: string;
+  productionTrend: Array<{ date: string; decodes: number; commissionAmount: number }>;
+  lastSixMonths: Array<{ month: string; clientCount: number; commissionAmount: number; status: string }>;
+};
+
+export async function fetchAffiliateDashboard(id: string): Promise<AdminAffiliateDashboard> {
+  const res = await api.get<AdminAffiliateDashboard>(`/api/admin/affiliates/${id}/dashboard`);
+  return res.data;
+}
+
 export async function createAffiliate(req: AffiliateCreateRequest): Promise<Affiliate> {
   const res = await api.post<Affiliate>("/api/admin/affiliates", req);
   return res.data;

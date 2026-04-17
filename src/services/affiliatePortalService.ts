@@ -40,19 +40,30 @@ export type MonthlyBreakdown = {
   status: string;
 };
 
+export type DailyProduction = {
+  date: string;
+  decodes: number;
+  commissionAmount: number;
+};
+
 export type DashboardResponse = {
   refCode: string;
   shareLink: string;
   commissionRate: number;
+  decodesToday: number;
+  decodesThisMonth: number;
+  decodesTotal: number;
   activeClients: number;
   totalConversions: number;
-  lifetimeEarned: number;
+  dailyEarned: number;
   currentMonthEstimate: number;
   lastMonthEarned: number;
+  lifetimeEarned: number;
   pendingCarencia: number;
   readyForPayout: number;
   alreadyPaid: number;
   nextPayoutDate: string;
+  productionTrend: DailyProduction[];
   lastSixMonths: MonthlyBreakdown[];
 };
 
