@@ -165,6 +165,9 @@ export default function AffiliateShell() {
           <NavLink to="/afiliado/interacoes" className={({ isActive }) => `aff-nav-item ${isActive ? "active" : ""}`}>
             Interações
           </NavLink>
+          <NavLink to="/afiliado/estabelecimentos" className={({ isActive }) => `aff-nav-item ${isActive ? "active" : ""}`}>
+            Estabelecimentos
+          </NavLink>
           <NavLink to="/afiliado/comissoes" className={({ isActive }) => `aff-nav-item ${isActive ? "active" : ""}`}>
             Comissões
           </NavLink>

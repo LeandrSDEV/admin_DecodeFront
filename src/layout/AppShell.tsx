@@ -41,6 +41,7 @@ function titleForPath(pathname: string) {
   if (pathname.startsWith("/clientes/leads")) return "Clientes • Leads";
   if (pathname.startsWith("/clientes/planos")) return "Clientes • Planos";
   if (pathname.startsWith("/parceiros/afiliados")) return "Parceiros • Afiliados";
+  if (pathname.startsWith("/parceiros/solicitacoes")) return "Parceiros • Solicitações de Estabelecimento";
   if (pathname.startsWith("/parceiros/comissoes")) return "Parceiros • Comissões";
   if (pathname.startsWith("/parceiros/conhecimento")) return "Parceiros • Conhecimento";
   if (pathname.startsWith("/usuarios")) return "Usuários";
@@ -242,6 +243,13 @@ export default function AppShell() {
               >
                 <span className="dot" />
                 <span>Afiliados</span>
+              </NavLink>
+              <NavLink
+                to="/parceiros/solicitacoes"
+                className={({ isActive }) => `nav-sub-item ${isActive ? "active" : ""}`}
+              >
+                <span className="dot" />
+                <span>Solicitações</span>
               </NavLink>
               <NavLink
                 to="/parceiros/comissoes"

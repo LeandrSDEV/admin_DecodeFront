@@ -279,7 +279,10 @@ export default function AfiliadosPage() {
         notes: approveForm.notes || undefined,
       });
       setApproveOpen(false);
-      showSuccess(`Afiliado ${approveTarget.name} aprovado.`);
+      const msg = approveTarget.whatsapp
+        ? `Afiliado ${approveTarget.name} aprovado. Credenciais enviadas via WhatsApp para ${approveTarget.whatsapp}.`
+        : `Afiliado ${approveTarget.name} aprovado. Sem WhatsApp cadastrado — envie as credenciais manualmente.`;
+      showSuccess(msg);
       await load();
     } catch (e: any) {
       setError(e?.response?.data?.message || "Falha ao aprovar.");
@@ -855,6 +858,44 @@ export default function AfiliadosPage() {
               onChange={(e) => setApproveForm((p) => ({ ...p, notes: e.target.value }))}
             />
           </div>
+          {approveTarget?.whatsapp ? (
+            <div
+              className="form-field"
+              style={{
+                gridColumn: "1 / -1",
+                background: "var(--panel-2, rgba(16,185,129,0.08))",
+                border: "1px solid rgba(16,185,129,0.25)",
+                borderRadius: 8,
+                padding: "10px 12px",
+                fontSize: 13,
+              }}
+            >
+              <strong style={{ color: "#10b981" }}>📱 WhatsApp automático</strong>
+              <div className="muted" style={{ marginTop: 4 }}>
+                Ao aprovar, uma mensagem com o link do portal, login (email) e
+                senha inicial será enviada para{" "}
+                <strong>{approveTarget.whatsapp}</strong> via whatsapp-bridge.
+              </div>
+            </div>
+          ) : (
+            <div
+              className="form-field"
+              style={{
+                gridColumn: "1 / -1",
+                background: "rgba(245,158,11,0.08)",
+                border: "1px solid rgba(245,158,11,0.25)",
+                borderRadius: 8,
+                padding: "10px 12px",
+                fontSize: 13,
+              }}
+            >
+              <strong style={{ color: "#f59e0b" }}>⚠️ Sem WhatsApp</strong>
+              <div className="muted" style={{ marginTop: 4 }}>
+                Este afiliado não tem WhatsApp cadastrado — as credenciais
+                precisarão ser comunicadas manualmente.
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
     </div>

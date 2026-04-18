@@ -12,6 +12,7 @@ import PlanosPage from "./pages/controle/PlanosPage";
 import AfiliadosPage from "./pages/afiliados/AfiliadosPage";
 import AfiliadoDetalhePage from "./pages/afiliados/AfiliadoDetalhePage";
 import ComissoesPage from "./pages/afiliados/ComissoesPage";
+import SolicitacoesEstabelecimentoPage from "./pages/afiliados/SolicitacoesEstabelecimentoPage";
 import ConhecimentoPage from "./pages/parceiros/ConhecimentoPage";
 import AfiliadoLoginPage from "./pages/afiliado/AfiliadoLoginPage";
 import AfiliadoPainelPage from "./pages/afiliado/AfiliadoPainelPage";
@@ -20,6 +21,7 @@ import AfiliadoPerfilPage from "./pages/afiliado/AfiliadoPerfilPage";
 import AfiliadoLeadsPage from "./pages/afiliado/AfiliadoLeadsPage";
 import AfiliadoInteracoesPage from "./pages/afiliado/AfiliadoInteracoesPage";
 import AfiliadoMaterialVendasPage from "./pages/afiliado/AfiliadoMaterialVendasPage";
+import AfiliadoNovoEstabelecimentoPage from "./pages/afiliado/AfiliadoNovoEstabelecimentoPage";
 import UsuariosPage from "./pages/usuarios/UsuariosPage";
 import MonitoramentoPage from "./pages/monitoramento/MonitoramentoPage";
 import TenantsPage from "./pages/tenants/TenantsPage";
@@ -38,6 +40,7 @@ export default function App() {
           <Route path="/afiliado/painel" element={<AfiliadoPainelPage />} />
           <Route path="/afiliado/leads" element={<AfiliadoLeadsPage />} />
           <Route path="/afiliado/interacoes" element={<AfiliadoInteracoesPage />} />
+          <Route path="/afiliado/estabelecimentos" element={<AfiliadoNovoEstabelecimentoPage />} />
           <Route path="/afiliado/comissoes" element={<AfiliadoComissoesPage />} />
           <Route path="/afiliado/material-vendas" element={<AfiliadoMaterialVendasPage />} />
           <Route path="/afiliado/perfil" element={<AfiliadoPerfilPage />} />
@@ -56,6 +59,7 @@ export default function App() {
           <Route path="/clientes/planos" element={<PlanosPage />} />
           <Route path="/parceiros/afiliados" element={<AfiliadosPage />} />
           <Route path="/parceiros/afiliados/:id" element={<AfiliadoDetalhePage />} />
+          <Route path="/parceiros/solicitacoes" element={<SolicitacoesEstabelecimentoPage />} />
           <Route path="/parceiros/comissoes" element={<ComissoesPage />} />
           <Route path="/parceiros/conhecimento" element={<ConhecimentoPage />} />
 
