@@ -23,6 +23,7 @@ import AfiliadoLeadsPage from "./pages/afiliado/AfiliadoLeadsPage";
 import AfiliadoInteracoesPage from "./pages/afiliado/AfiliadoInteracoesPage";
 import AfiliadoMaterialVendasPage from "./pages/afiliado/AfiliadoMaterialVendasPage";
 import AfiliadoNovoEstabelecimentoPage from "./pages/afiliado/AfiliadoNovoEstabelecimentoPage";
+import AfiliadoConhecimentoPage from "./pages/afiliado/AfiliadoConhecimentoPage";
 import UsuariosPage from "./pages/usuarios/UsuariosPage";
 import MonitoramentoPage from "./pages/monitoramento/MonitoramentoPage";
 import TenantsPage from "./pages/tenants/TenantsPage";
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="/afiliado/estabelecimentos" element={<AfiliadoNovoEstabelecimentoPage />} />
           <Route path="/afiliado/comissoes" element={<AfiliadoComissoesPage />} />
           <Route path="/afiliado/material-vendas" element={<AfiliadoMaterialVendasPage />} />
+          <Route path="/afiliado/conhecimento" element={<AfiliadoConhecimentoPage />} />
           <Route path="/afiliado/perfil" element={<AfiliadoPerfilPage />} />
         </Route>
       </Route>

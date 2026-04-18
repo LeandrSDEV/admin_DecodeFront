@@ -9,6 +9,26 @@ import type {
   PlanModule,
 } from "../../services/affiliateSubmissionService";
 
+type PlanKey = "MESAS" | "DELIVERY" | "COMPLETA";
+
+const PLAN_CATALOG: Record<PlanKey, { name: string; module: PlanModule; price: number; emoji: string }> = {
+  MESAS:    { name: "Gestão de Mesas",   module: "MESA",     price: 79.90,  emoji: "🍽️" },
+  DELIVERY: { name: "Gestão Delivery",   module: "DELIVERY", price: 99.90,  emoji: "🛵" },
+  COMPLETA: { name: "Gestão Completa",   module: "COMPLETA", price: 149.90, emoji: "💎" },
+};
+
+type DurationKey = "MONTHLY" | "QUARTERLY" | "SEMESTRAL" | "ANNUAL";
+
+const DURATION_CATALOG: Record<DurationKey, { label: string; days: number; discountPct: number }> = {
+  MONTHLY:   { label: "Mensal",      days: 30,  discountPct: 0 },
+  QUARTERLY: { label: "Trimestral",  days: 90,  discountPct: 5 },
+  SEMESTRAL: { label: "Semestral",   days: 180, discountPct: 10 },
+  ANNUAL:    { label: "Anual",       days: 365, discountPct: 20 },
+};
+
+const DEFAULT_PLAN: PlanKey = "COMPLETA";
+const DEFAULT_DURATION: DurationKey = "MONTHLY";
+
 const EMPTY: AffiliateDecodeSubmissionRequest = {
   establishmentName: "",
   city: "",
@@ -19,11 +39,11 @@ const EMPTY: AffiliateDecodeSubmissionRequest = {
   contactPhone: "",
   estimatedUsersCount: undefined,
   estimatedMonthlyRevenue: undefined,
-  planModule: "COMPLETA",
-  planName: "",
-  planPrice: 0,
-  planDiscountPct: 0,
-  planDurationDays: 30,
+  planModule: PLAN_CATALOG[DEFAULT_PLAN].module,
+  planName: PLAN_CATALOG[DEFAULT_PLAN].name,
+  planPrice: PLAN_CATALOG[DEFAULT_PLAN].price,
+  planDiscountPct: DURATION_CATALOG[DEFAULT_DURATION].discountPct,
+  planDurationDays: DURATION_CATALOG[DEFAULT_DURATION].days,
   planFeatures: "",
   notes: "",
 };
@@ -40,14 +60,44 @@ const MODULE_LABEL: Record<PlanModule, string> = {
   COMPLETA: "Completa (Mesa + Delivery)",
 };
 
+const fmtBRL = (v: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v || 0);
+
 export default function AfiliadoNovoEstabelecimentoPage() {
   const [form, setForm] = useState<AffiliateDecodeSubmissionRequest>(EMPTY);
+  const [planKey, setPlanKey] = useState<PlanKey>(DEFAULT_PLAN);
+  const [durationKey, setDurationKey] = useState<DurationKey>(DEFAULT_DURATION);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const [submissions, setSubmissions] = useState<AffiliateDecodeSubmission[]>([]);
   const [loadingList, setLoadingList] = useState(true);
+
+  const plan = PLAN_CATALOG[planKey];
+  const duration = DURATION_CATALOG[durationKey];
+  const netTotal = plan.price * (duration.days / 30) * (1 - duration.discountPct / 100);
+
+  function selectPlan(key: PlanKey) {
+    const p = PLAN_CATALOG[key];
+    setPlanKey(key);
+    setForm((prev) => ({
+      ...prev,
+      planModule: p.module,
+      planName: p.name,
+      planPrice: p.price,
+    }));
+  }
+
+  function selectDuration(key: DurationKey) {
+    const d = DURATION_CATALOG[key];
+    setDurationKey(key);
+    setForm((prev) => ({
+      ...prev,
+      planDurationDays: d.days,
+      planDiscountPct: d.discountPct,
+    }));
+  }
 
   async function loadList() {
     setLoadingList(true);
@@ -78,12 +128,8 @@ export default function AfiliadoNovoEstabelecimentoPage() {
     setSuccess("");
 
     if (!form.establishmentName.trim() || !form.city.trim() || !form.contactName.trim()
-        || !form.contactPhone.trim() || !form.planName.trim()) {
+        || !form.contactPhone.trim()) {
       setError("Preencha os campos obrigatórios (*).");
-      return;
-    }
-    if (!form.planPrice || form.planPrice <= 0) {
-      setError("Informe um valor mensal válido para o plano.");
       return;
     }
 
@@ -211,6 +257,30 @@ export default function AfiliadoNovoEstabelecimentoPage() {
           font-weight: 700;
           font-size: 13px;
         }
+        .aff-summary {
+          margin-top: 18px;
+          background: rgba(255,179,122,0.06);
+          border: 1px dashed rgba(255,179,122,0.3);
+          border-radius: 10px;
+          padding: 14px 16px;
+          display: grid;
+          gap: 6px;
+        }
+        .aff-summary-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 13px;
+          color: #cbd5e1;
+        }
+        .aff-summary-row strong { color: #fff; font-weight: 700; }
+        .aff-summary-total {
+          border-top: 1px solid rgba(255,255,255,0.08);
+          margin-top: 6px;
+          padding-top: 8px;
+          font-size: 14px;
+        }
+        .aff-summary-total strong { color: #ffb37a; font-size: 16px; }
       `}</style>
 
       <h1 className="aff-page-title">Cadastrar novo estabelecimento</h1>
@@ -324,55 +394,58 @@ export default function AfiliadoNovoEstabelecimentoPage() {
           <h3>Plano contratado</h3>
           <div className="aff-grid">
             <div className="aff-field">
-              <label>Módulo<span className="aff-required">*</span></label>
-              <select
-                value={form.planModule}
-                onChange={(e) => update("planModule", e.target.value as PlanModule)}
-              >
-                <option value="COMPLETA">Completa (Mesa + Delivery)</option>
-                <option value="MESA">Mesa</option>
-                <option value="DELIVERY">Delivery</option>
+              <label>Plano<span className="aff-required">*</span></label>
+              <select value={planKey} onChange={(e) => selectPlan(e.target.value as PlanKey)}>
+                {(Object.keys(PLAN_CATALOG) as PlanKey[]).map((k) => (
+                  <option key={k} value={k}>
+                    {PLAN_CATALOG[k].emoji} {PLAN_CATALOG[k].name} · {fmtBRL(PLAN_CATALOG[k].price)}/mês
+                  </option>
+                ))}
               </select>
             </div>
             <div className="aff-field">
-              <label>Nome do plano<span className="aff-required">*</span></label>
-              <input
-                value={form.planName}
-                onChange={(e) => update("planName", e.target.value)}
-                placeholder="Ex: Plano Completo Mensal"
-              />
-            </div>
-            <div className="aff-field">
-              <label>Valor mensal (R$)<span className="aff-required">*</span></label>
-              <input
-                type="number"
-                min={0}
-                step="0.01"
-                value={form.planPrice || ""}
-                onChange={(e) => update("planPrice", Number(e.target.value))}
-              />
-            </div>
-            <div className="aff-field">
-              <label>Desconto (%)</label>
-              <input
-                type="number"
-                min={0}
-                max={100}
-                step="0.01"
-                value={form.planDiscountPct ?? 0}
-                onChange={(e) => update("planDiscountPct", Number(e.target.value))}
-              />
-            </div>
-            <div className="aff-field">
-              <label>Duração em dias<span className="aff-required">*</span></label>
-              <input
-                type="number"
-                min={1}
-                value={form.planDurationDays}
-                onChange={(e) => update("planDurationDays", Number(e.target.value))}
-              />
+              <label>Duração<span className="aff-required">*</span></label>
+              <select
+                value={durationKey}
+                onChange={(e) => selectDuration(e.target.value as DurationKey)}
+              >
+                {(Object.keys(DURATION_CATALOG) as DurationKey[]).map((k) => {
+                  const d = DURATION_CATALOG[k];
+                  return (
+                    <option key={k} value={k}>
+                      {d.label} ({d.days} dias){d.discountPct > 0 ? ` · -${d.discountPct}%` : ""}
+                    </option>
+                  );
+                })}
+              </select>
             </div>
           </div>
+
+          <div className="aff-summary">
+            <div className="aff-summary-row">
+              <span>Plano</span>
+              <strong>{plan.name}</strong>
+            </div>
+            <div className="aff-summary-row">
+              <span>Valor mensal</span>
+              <strong>{fmtBRL(plan.price)}</strong>
+            </div>
+            <div className="aff-summary-row">
+              <span>Duração</span>
+              <strong>{duration.label} ({duration.days} dias)</strong>
+            </div>
+            <div className="aff-summary-row">
+              <span>Desconto aplicado</span>
+              <strong style={{ color: duration.discountPct > 0 ? "#4ade80" : undefined }}>
+                {duration.discountPct > 0 ? `-${duration.discountPct}%` : "—"}
+              </strong>
+            </div>
+            <div className="aff-summary-row aff-summary-total">
+              <span>Total do período</span>
+              <strong>{fmtBRL(netTotal)}</strong>
+            </div>
+          </div>
+
           <div className="aff-field" style={{ marginTop: 14 }}>
             <label>Recursos / features do plano</label>
             <textarea
