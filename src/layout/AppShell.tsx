@@ -44,6 +44,8 @@ function titleForPath(pathname: string) {
   if (pathname.startsWith("/parceiros/solicitacoes")) return "Parceiros • Solicitações de Estabelecimento";
   if (pathname.startsWith("/parceiros/comissoes")) return "Parceiros • Comissões";
   if (pathname.startsWith("/parceiros/conhecimento")) return "Parceiros • Conhecimento";
+  if (pathname.startsWith("/parceiros/links")) return "Parceiros • Links";
+  if (pathname.startsWith("/config/whatsapp")) return "Configurações • WhatsApp";
   if (pathname.startsWith("/usuarios")) return "Usuários";
   if (pathname.startsWith("/monitoramento")) return "Monitoramento";
   if (pathname.startsWith("/tenants")) return "Tenants";
@@ -265,6 +267,13 @@ export default function AppShell() {
                 <span className="dot" />
                 <span>Conhecimento</span>
               </NavLink>
+              <NavLink
+                to="/parceiros/links"
+                className={({ isActive }) => `nav-sub-item ${isActive ? "active" : ""}`}
+              >
+                <span className="dot" />
+                <span>Links</span>
+              </NavLink>
             </div>
           )}
 
@@ -316,6 +325,13 @@ export default function AppShell() {
               >
                 <span className="dot" />
                 <span>Senha</span>
+              </NavLink>
+              <NavLink
+                to="/config/whatsapp"
+                className={({ isActive }) => `nav-sub-item ${isActive ? "active" : ""}`}
+              >
+                <span className="dot" />
+                <span>WhatsApp</span>
               </NavLink>
             </div>
           )}

@@ -190,9 +190,25 @@ export default function SolicitacoesEstabelecimentoPage() {
         </div>
       )}
 
-      <div className="row" style={{ gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
-        <div className="input-icon" style={{ flex: 1, minWidth: 220 }}>
-          <IconSearch />
+      <div className="row" style={{ gap: 10, marginBottom: 12, flexWrap: "wrap", alignItems: "center" }}>
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            flex: "1 1 260px",
+            minWidth: 220,
+          }}
+        >
+          <IconSearch
+            size={15}
+            style={{
+              position: "absolute",
+              left: 10,
+              color: "var(--muted)",
+              pointerEvents: "none",
+            }}
+          />
           <input
             className="input"
             placeholder="Buscar por estabelecimento, afiliado, contato..."
@@ -204,6 +220,7 @@ export default function SolicitacoesEstabelecimentoPage() {
                 load();
               }
             }}
+            style={{ width: "100%", paddingLeft: 34 }}
           />
         </div>
         <select
@@ -213,7 +230,7 @@ export default function SolicitacoesEstabelecimentoPage() {
             setStatusFilter(e.target.value as AffiliateDecodeSubmissionStatus | "");
             setPage(0);
           }}
-          style={{ maxWidth: 180 }}
+          style={{ minWidth: 170 }}
         >
           <option value="">Todos os status</option>
           <option value="PENDING">Pendentes</option>

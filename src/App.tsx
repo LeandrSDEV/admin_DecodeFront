@@ -14,6 +14,7 @@ import AfiliadoDetalhePage from "./pages/afiliados/AfiliadoDetalhePage";
 import ComissoesPage from "./pages/afiliados/ComissoesPage";
 import SolicitacoesEstabelecimentoPage from "./pages/afiliados/SolicitacoesEstabelecimentoPage";
 import ConhecimentoPage from "./pages/parceiros/ConhecimentoPage";
+import LinksPage from "./pages/parceiros/LinksPage";
 import AfiliadoLoginPage from "./pages/afiliado/AfiliadoLoginPage";
 import AfiliadoPainelPage from "./pages/afiliado/AfiliadoPainelPage";
 import AfiliadoComissoesPage from "./pages/afiliado/AfiliadoComissoesPage";
@@ -27,6 +28,7 @@ import MonitoramentoPage from "./pages/monitoramento/MonitoramentoPage";
 import TenantsPage from "./pages/tenants/TenantsPage";
 import ProfilePage from "./pages/settings/ProfilePage";
 import SecurityPage from "./pages/settings/SecurityPage";
+import WhatsAppBridgePage from "./pages/settings/WhatsAppBridgePage";
 
 export default function App() {
   return (
@@ -62,6 +64,7 @@ export default function App() {
           <Route path="/parceiros/solicitacoes" element={<SolicitacoesEstabelecimentoPage />} />
           <Route path="/parceiros/comissoes" element={<ComissoesPage />} />
           <Route path="/parceiros/conhecimento" element={<ConhecimentoPage />} />
+          <Route path="/parceiros/links" element={<LinksPage />} />
 
           {/* Compatibilidade: redireciona URLs antigas */}
           <Route path="/controle/decodes" element={<Navigate to="/clientes/decodes" replace />} />
@@ -76,6 +79,7 @@ export default function App() {
 
           <Route path="/config/perfil" element={<ProfilePage />} />
           <Route path="/config/seguranca" element={<SecurityPage />} />
+          <Route path="/config/whatsapp" element={<WhatsAppBridgePage />} />
         </Route>
       </Route>
 
