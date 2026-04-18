@@ -99,22 +99,43 @@ export default function DashboardPage() {
   async function load() {
     setLoading(true);
     setError(null);
-    try {
-      const [overviewRes, tenantsRes, affiliatesRes] = await Promise.all([
-        api.get<DashboardOverview>("/api/admin/dashboard/overview"),
-        api.get<TenantListItem[]>("/api/admin/tenants"),
-        listAffiliates({ size: 200 }).catch(() => ({ content: [] as Affiliate[], totalElements: 0, number: 0, size: 0 })),
-      ]);
-      setData(overviewRes.data);
-      setTenantsList(Array.isArray(tenantsRes.data) ? tenantsRes.data : []);
-      setAffiliates(affiliatesRes.content || []);
-    } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const msg = (e as any)?.response?.data?.message || "Falha ao carregar dashboard";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
+    const warnings: string[] = [];
+
+    const emptyOverview: DashboardOverview = {
+      tenancy: { generatedAt: "", tenantCount: 0, tenants: [] },
+      crm: { affiliatesActive: 0, affiliatesPending: 0, decodesTotal: 0 },
+      topAffiliates: [],
+    };
+
+    const [overviewRes, tenantsRes, affiliatesRes] = await Promise.all([
+      api.get<DashboardOverview>("/api/admin/dashboard/overview")
+        .then((r) => r.data)
+        .catch((e) => {
+          warnings.push(extractMsg(e, "Visão geral indisponível"));
+          return emptyOverview;
+        }),
+      api.get<TenantListItem[]>("/api/admin/tenants")
+        .then((r) => (Array.isArray(r.data) ? r.data : []))
+        .catch((e) => {
+          warnings.push(extractMsg(e, "Serviço de tenants indisponível"));
+          return [] as TenantListItem[];
+        }),
+      listAffiliates({ size: 200 })
+        .then((r) => r.content || [])
+        .catch(() => [] as Affiliate[]),
+    ]);
+
+    setData(overviewRes);
+    setTenantsList(tenantsRes);
+    setAffiliates(affiliatesRes);
+    if (warnings.length > 0) setError(warnings.join(" · "));
+    setLoading(false);
+  }
+
+  function extractMsg(e: unknown, fallback: string): string {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyErr = e as any;
+    return anyErr?.response?.data?.message || anyErr?.message || fallback;
   }
 
   const newTenants = useMemo(() => {
@@ -148,18 +169,15 @@ const focusedTenant = useMemo(() => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="page">
-        <div className="alert-danger">{error}</div>
-      </div>
-    );
-  }
-
   if (!data) return null;
 
   return (
     <div className="page dashboard-page">
+      {error && (
+        <div className="alert-warning" style={{ marginBottom: 12 }}>
+          ⚠️ {error}
+        </div>
+      )}
       {/* ============ KPI ROW ============ */}
       <div className="kpi-grid">
         <KpiCard
