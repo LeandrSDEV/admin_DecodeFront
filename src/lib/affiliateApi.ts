@@ -1,10 +1,22 @@
 import axios from "axios";
 import { clearAffiliateAuth, getAffiliateToken } from "../auth/affiliateAuthStorage";
 
+declare global {
+  interface Window {
+    __ENV__?: { VITE_API_BASE_URL?: string };
+  }
+}
+
+const affiliateApiBaseUrl =
+  (typeof window !== "undefined" && window.__ENV__?.VITE_API_BASE_URL) ||
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  "";
+
 // Cliente axios isolado para o portal do afiliado.
 // Aponta pros endpoints /api/affiliate/** que tem JWT e SecurityFilterChain proprios.
 const affiliateApi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: affiliateApiBaseUrl,
 });
 
 affiliateApi.interceptors.request.use((config) => {
