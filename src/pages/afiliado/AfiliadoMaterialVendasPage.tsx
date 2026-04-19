@@ -1,21 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { fetchMe } from "../../services/affiliatePortalService";
 
 // =============================================================================
 // Página interna do AFILIADO — material de venda
 // Rota: /afiliado/material-vendas (dentro do AffiliateShell)
-//
-// Objetivo: dar ao afiliado APROVADO uma página única, intuitiva e visual
-// com tudo que ele precisa pra vender o sistema:
-//
-//   1. Pitch curto: o que é a gestão e por que adotar
-//   2. Catálogo dos 3 planos (mesmo visual do landing externo)
-//   3. Tiers de desconto por tempo
-//   4. Calculadora interativa: "quanto você ganha por X clientes"
-//   5. Diferenciais bullet
-//   6. Como o fluxo de comissão funciona
 // =============================================================================
 
-const COMMISSION_RATE = 0.15; // 15%
+const DEFAULT_COMMISSION_RATE = 0.15; // fallback enquanto o /me não respondeu
 
 const fmtCurrency = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v || 0);
@@ -99,14 +90,28 @@ const FLUXO_COMISSAO = [
 export default function AfiliadoMaterialVendasPage() {
   const [clientCount, setClientCount] = useState(5);
   const [selectedPlanKey, setSelectedPlanKey] = useState<string>("delivery");
+  const [commissionRate, setCommissionRate] = useState(DEFAULT_COMMISSION_RATE);
+
+  useEffect(() => {
+    fetchMe()
+      .then((me) => {
+        // backend retorna o valor em % (ex: 15 para 15%); normaliza para fração
+        if (typeof me.commissionRate === "number" && me.commissionRate > 0) {
+          setCommissionRate(me.commissionRate / 100);
+        }
+      })
+      .catch(() => {
+        // mantém o default se /me falhar
+      });
+  }, []);
 
   const selectedPlan = PLANS.find((p) => p.key === selectedPlanKey) || PLANS[0];
 
   const calc = useMemo(() => {
-    const monthly = selectedPlan.price * clientCount * COMMISSION_RATE;
+    const monthly = selectedPlan.price * clientCount * commissionRate;
     const yearly = monthly * 12;
     return { monthly, yearly };
-  }, [clientCount, selectedPlan]);
+  }, [clientCount, selectedPlan, commissionRate]);
 
   return (
     <div className="mv-page">
@@ -125,7 +130,7 @@ export default function AfiliadoMaterialVendasPage() {
       <section className="mv-section mv-calc">
         <div className="mv-section-head">
           <h3>📊 Calculadora — quanto você pode ganhar?</h3>
-          <span className="mv-muted">Comissão de {(COMMISSION_RATE * 100).toFixed(0)}% sobre o valor do plano</span>
+          <span className="mv-muted">Comissão de {(commissionRate * 100).toFixed(0)}% sobre o valor do plano</span>
         </div>
 
         <div className="mv-calc-body">
@@ -172,7 +177,7 @@ export default function AfiliadoMaterialVendasPage() {
             <div className="mv-result-yearly">{fmtCurrency(calc.yearly)}</div>
 
             <div className="mv-formula">
-              {clientCount} × {fmtCurrency(selectedPlan.price)} × {(COMMISSION_RATE * 100).toFixed(0)}%
+              {clientCount} × {fmtCurrency(selectedPlan.price)} × {(commissionRate * 100).toFixed(0)}%
             </div>
           </div>
         </div>
@@ -205,7 +210,7 @@ export default function AfiliadoMaterialVendasPage() {
 
               <div className="mv-plan-commission">
                 Sua comissão por cliente
-                <span>{fmtCurrency(plan.price * COMMISSION_RATE)}</span>
+                <span>{fmtCurrency(plan.price * commissionRate)}</span>
               </div>
 
               <ul className="mv-plan-features">
