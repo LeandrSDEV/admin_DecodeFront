@@ -108,13 +108,6 @@ export default function LoginPage() {
             <span className="submit-glow" aria-hidden="true" />
             {loading ? "Entrando..." : "Entrar"}
           </button>
-
-          {import.meta.env.DEV && (
-            <div className="hint">
-              Dica (dev): usuário padrão <span className="mono">admin@decode.com</span> • senha{" "}
-              <span className="mono">admin123</span>
-            </div>
-          )}
         </form>
       </div>
 

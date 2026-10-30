@@ -40,3 +40,6 @@ $RECYCLE.BIN/
 .cache/
 *.tsbuildinfo
 !tsconfig.tsbuildinfo
+
+# configuração local do Claude Code
+.claude/

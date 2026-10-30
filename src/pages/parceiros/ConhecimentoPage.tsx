@@ -318,8 +318,6 @@ export default function ConhecimentoPage() {
               <Module
                 name="Encomendas"
                 desc="Fluxo completo para bolos, kits, festas: orçamento → confirmado → em produção → pronto → entregue. Suporta pagamento de sinal. Essencial para confeitarias."
-                shotSrc="/knowledge/encomendas.png"
-                shotCaption="Kanban de encomendas com fluxo de produção"
               />
             </ModuleGroup>
 
